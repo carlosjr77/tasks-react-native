@@ -26,7 +26,7 @@ export default class AddTasks extends Component {
             Alert.alert('Dados Inválidos', 'Informe uma descrição para continuar')
             return
         }
-        const data = [...this.state]
+        const data = {...this.state}
         this.props.onSave(data)
         this.setState({ ...initialState })
     }
