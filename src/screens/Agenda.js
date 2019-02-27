@@ -18,7 +18,6 @@ import AddTask from './AddTasks'
 
 import todayImage from '../assets/img/today.jpg'
 
-
 export default class Agenda extends Component {
   state = {
     tasks: [
@@ -70,6 +69,11 @@ export default class Agenda extends Component {
       doneAt: null
     })
     this.setState({ tasks, showAddTask: false }, this.filterTasks)
+  }
+
+  deleteTak = id => {
+    const tasks = this.state.tasks.filter(task => task.id !== id)
+    this.setState({ tasks }, this.filterTasks)
   }
 
   filterTasks = () => {
@@ -127,7 +131,7 @@ export default class Agenda extends Component {
         <View style={styles.tasksContainer}>
           <FlatList data={this.state.visibleTasks} keyExtractor={item => `${item.id}`}
             renderItem={({ item }) => 
-              <Task {...item} toogleTask={this.toogleTask} /> }/>
+              <Task {...item} toogleTask={this.toogleTask} onDelete={this.deleteTak} /> }/>
         </View>
         <ActionButton buttonColor={commonStyles.colors.today}
           onPress={() => this.setState({ showAddTask: true })} /> 
