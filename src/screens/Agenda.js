@@ -6,7 +6,9 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
-  Platform
+  Platform,
+  AsyncStorage,
+  ActivityIndicator
 } from 'react-native';
 import moment from 'moment'
 import 'moment/locale/pt-br'
@@ -20,41 +22,7 @@ import todayImage from '../assets/img/today.jpg'
 
 export default class Agenda extends Component {
   state = {
-    tasks: [
-      { id: Math.random(), description: 'Comprar curso de reac native', 
-        estimateAt: new Date(), doneAt: new Date()},
-      { id: Math.random(), description: 'Concluir curso', estimateAt: new Date(), doneAt: null},
-      { id: Math.random(), description: 'Comprar curso de reac native', 
-        estimateAt: new Date(), doneAt: new Date()},
-      { id: Math.random(), description: 'Concluir curso', estimateAt: new Date(), doneAt: null},
-      { id: Math.random(), description: 'Comprar curso de reac native', 
-        estimateAt: new Date(), doneAt: new Date()},
-      { id: Math.random(), description: 'Concluir curso', estimateAt: new Date(), doneAt: null},
-      { id: Math.random(), description: 'Comprar curso de reac native', 
-        estimateAt: new Date(), doneAt: new Date()},
-      { id: Math.random(), description: 'Concluir curso', estimateAt: new Date(), doneAt: null},
-      { id: Math.random(), description: 'Comprar curso de reac native', 
-        estimateAt: new Date(), doneAt: new Date()},
-      { id: Math.random(), description: 'Concluir curso', estimateAt: new Date(), doneAt: null},
-      { id: Math.random(), description: 'Comprar curso de reac native', 
-        estimateAt: new Date(), doneAt: new Date()},
-      { id: Math.random(), description: 'Concluir curso', estimateAt: new Date(), doneAt: null},
-      { id: Math.random(), description: 'Comprar curso de reac native', 
-        estimateAt: new Date(), doneAt: new Date()},
-      { id: Math.random(), description: 'Concluir curso', estimateAt: new Date(), doneAt: null},
-      { id: Math.random(), description: 'Comprar curso de reac native', 
-        estimateAt: new Date(), doneAt: new Date()},
-      { id: Math.random(), description: 'Concluir curso', estimateAt: new Date(), doneAt: null},
-      { id: Math.random(), description: 'Comprar curso de reac native', 
-        estimateAt: new Date(), doneAt: new Date()},
-      { id: Math.random(), description: 'Concluir curso', estimateAt: new Date(), doneAt: null},
-      { id: Math.random(), description: 'Comprar curso de reac native', 
-        estimateAt: new Date(), doneAt: new Date()},
-      { id: Math.random(), description: 'Concluir curso', estimateAt: new Date(), doneAt: null},
-      { id: Math.random(), description: 'Comprar curso de reac native', 
-        estimateAt: new Date(), doneAt: new Date()},
-      { id: Math.random(), description: 'Concluir curso', estimateAt: new Date(), doneAt: null},
-    ],
+    tasks: [],
     visibleTasks: [],
     showDoneTasks: true,
     showAddTask: false
@@ -85,6 +53,7 @@ export default class Agenda extends Component {
       visibleTasks = this.state.tasks.filter(pending)
     }
     this.setState({ visibleTasks })
+    AsyncStorage.setItem('tasks', JSON.stringify(this.state.tasks))
   }
 
   toogleFilter = () => {
@@ -92,8 +61,11 @@ export default class Agenda extends Component {
         this.filterTasks)
   }
 
-  componentDidMount = () => {
-    this.filterTasks()
+  componentDidMount = async() => {
+    this.setState({loading: true})
+    const data = await AsyncStorage.getItem('tasks')
+    const tasks = JSON.parse(data) || []
+    this.setState({ tasks, loading: false }, this.filterTasks)
   }
 
   toogleTask = id => {
@@ -109,6 +81,9 @@ export default class Agenda extends Component {
   }
 
   render() {
+    if (this.state.loading) {
+      return <View style={{flex: 1, justifyContent: 'center'}}><ActivityIndicator size="large" color={commonStyles.colors.today} /></View>
+    }
     return (
       <View style={styles.container}>
         <AddTask onVisible={this.state.showAddTask}
