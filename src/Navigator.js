@@ -1,19 +1,16 @@
-import { createSwitchNavigator } from 'react-navigation'
+import { createSwitchNavigator, createAppContainer } from 'react-navigation'
 import Agenda from './screens/Agenda'
 import Auth from './screens/Auth'
 
-const MainRoutes = {
-    Auth: {
-        name: 'Auth',
-        screen: Auth
+const AppNavigator = createSwitchNavigator(
+    {
+        Auth: Auth,
+        Agenda: Agenda
     },
-    Agenda: {
-        name: 'Agenda',
-        screen: Agenda
-    },
-}
+    {
+      initialRouteName: "Auth"
+    }
+  );
 
-const MainNavigator = createSwitchNavigator(MainRoutes, { initialRouteName: 'Auth'})
-
-export default MainNavigator
+export default createAppContainer(AppNavigator)
 
