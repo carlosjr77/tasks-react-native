@@ -4,7 +4,7 @@
  */
 
 import {AppRegistry} from 'react-native';
-import AppNavigator from './src/Navigator';
+import Agenda from './src/screens/Agenda';
 import {name as appName} from './app.json';
 
-AppRegistry.registerComponent(appName, () => AppNavigator);
+AppRegistry.registerComponent(appName, () => Agenda);

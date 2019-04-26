@@ -7,6 +7,7 @@ import {
   FlatList,
   TouchableOpacity,
   Platform,
+  AsyncStorage,
   ActivityIndicator
 } from 'react-native';
 import moment from 'moment'
@@ -16,8 +17,6 @@ import Task from '../components/Task'
 import Icon from 'react-native-vector-icons/FontAwesome'
 import ActionButton from 'react-native-action-button'
 import AddTask from './AddTasks'
-import { server, showErrorAlert } from '../common'
-import Axios from 'axios';
 
 import todayImage from '../assets/img/today.jpg'
 
@@ -29,25 +28,20 @@ export default class Agenda extends Component {
     showAddTask: false
   }
 
-  addTask = async task => {
-    try {
-      await Axios.post(`${server}/tasks`, {
-        description: task.description,
-        estimateAt: task.date
-      })
-      this.setState({ showAddTask: false }, this.loadTasks)
-    } catch (error) {
-      showErrorAlert(error)
-    }
+  addTask = task => {
+    const tasks = [...this.state.tasks]
+    tasks.push({
+      id: Math.random(),
+      description: task.description,
+      estimateAt: task.date,
+      doneAt: null
+    })
+    this.setState({ tasks, showAddTask: false }, this.filterTasks)
   }
 
-  deleteTak = async id => {
-    try {
-      await Axios.delete(`${server}/tasks/${id}`)
-      await this.loadTasks()
-    } catch(error) {
-      showErrorAlert(error)
-    }
+  deleteTak = id => {
+    const tasks = this.state.tasks.filter(task => task.id !== id)
+    this.setState({ tasks }, this.filterTasks)
   }
 
   filterTasks = () => {
@@ -59,6 +53,7 @@ export default class Agenda extends Component {
       visibleTasks = this.state.tasks.filter(pending)
     }
     this.setState({ visibleTasks })
+    AsyncStorage.setItem('tasks', JSON.stringify(this.state.tasks))
   }
 
   toogleFilter = () => {
@@ -67,27 +62,22 @@ export default class Agenda extends Component {
   }
 
   componentDidMount = async() => {
-    this.loadTasks()
+    this.setState({loading: true})
+    const data = await AsyncStorage.getItem('tasks')
+    const tasks = JSON.parse(data) || []
+    this.setState({ tasks, loading: false }, this.filterTasks)
   }
 
-  toogleTask = async id => {
-    try {
-      await Axios.put(`${server}/tasks/${id}/toggle`)
-      await this.loadTasks()
-    } catch (error) {
-      showErrorAlert(error)
-    }
-  }
+  toogleTask = id => {
+    const tasks = this.state.tasks.map(task => {
+      if(task.id === id) {
+        task = {...task}
+        task.doneAt = task.doneAt ? null : new Date()
+      }
+      return task
+    })
 
-  loadTasks = async () => {
-    try {
-      const maxDate = moment()
-      .format('YYYY-MM-DD 23:59')
-      const res = await Axios.get(`${server}/tasks?date=${maxDate}`)
-      this.setState({ tasks: res.data }, this.filterTasks)
-    } catch (error) {
-      showErrorAlert(error)
-    }
+    this.setState({ tasks }, this.filterTasks)
   }
 
   render() {
